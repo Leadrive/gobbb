@@ -19,6 +19,12 @@ var (
 	b3        bbb.BigBlueButton
 )
 
+type _error string
+
+func (e _error) Error() string {
+	return string(e)
+}
+
 func init() {
 
 	templates = template.Must(template.New("index.html").Parse(pageIndexTemplate))
