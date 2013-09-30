@@ -10,7 +10,32 @@ import (
 	"github.com/sdgoij/gobbb"
 )
 
-func HandleConnect(c *Client, event WsEvent) error { return nil }
+func HandleConnect(c *Client, event WsEvent) error {
+	url, secret := "", ""
+	if u, t := event.Data["url"]; t && nil != u {
+		url = u.(string)
+	}
+	if s, t := event.Data["secret"]; t && nil != s {
+		secret = s.(string)
+	}
+	b3, err := bbb.New(url, secret)
+	ev := WsEvent{"connected", WsEventData{
+		"status":  "success",
+		"version": "",
+	}}
+	if err == nil {
+		if version := b3.ServerVersion(); "" == version {
+			ev.Data["status"] = "failure"
+		} else {
+			ev.Data["version"] = version
+			c.b3 = b3
+		}
+	}
+	ev.Data["error"] = err.Error()
+	c.events <- ev
+	return err
+}
+
 func HandleCreate(c *Client, event WsEvent) error  { return nil }
 func HandleJoinURL(c *Client, event WsEvent) error { return nil }
 func HandleEnd(c *Client, event WsEvent) error     { return nil }
