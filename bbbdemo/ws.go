@@ -36,7 +36,25 @@ func HandleConnect(c *Client, event WsEvent) error {
 	return err
 }
 
-func HandleCreate(c *Client, event WsEvent) error  { return nil }
+func HandleCreate(c *Client, event WsEvent) error {
+	id := ""
+	if i, t := event.Data["id"]; t && nil != i {
+		id = i.(string)
+	}
+	m, err := c.b3.Create(id, bbb.EmptyOptions)
+	if nil != err {
+		return err
+	}
+	c.events <- WsEvent{"created", WsEventData{
+		"id":          m.Id,
+		"created":     m.CreateTime.Unix(),
+		"attendeePW":  m.AttendeePW,
+		"moderatorPW": m.ModeratorPW,
+		"forcedEnd":   m.ForcedEnd,
+	}}
+	return nil
+}
+
 func HandleJoinURL(c *Client, event WsEvent) error { return nil }
 func HandleEnd(c *Client, event WsEvent) error     { return nil }
 
@@ -68,7 +86,7 @@ func HandleWS(ws *websocket.Conn) {
 	handler.AddClient(client)
 
 	defer func() {
-		log.Println("Connection from %s closed", remoteAddr)
+		log.Printf("Connection from %s closed", remoteAddr)
 		handler.RemoveClient(client)
 	}()
 
