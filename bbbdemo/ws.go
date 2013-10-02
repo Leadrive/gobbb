@@ -38,20 +38,24 @@ func HandleConnect(c *Client, event WsEvent) error {
 
 func HandleCreate(c *Client, event WsEvent) error {
 	id := ""
-	if i, t := event.Data["id"]; t && nil != i {
-		id = i.(string)
+	if v, t := event.Data["id"]; t && nil != v {
+		id = v.(string)
 	}
-	m, err := c.b3.Create(id, bbb.EmptyOptions)
-	if nil != err {
-		return err
+
+	var response WsEvent
+
+	if m, err := c.b3.Create(id, bbb.EmptyOptions); nil != err {
+		response = WsEvent{"create.fail", WsEventData{"error": err.Error()}}
+	} else {
+		response = WsEvent{"create.success", WsEventData{
+			"id":          m.Id,
+			"created":     m.CreateTime.Unix(),
+			"attendeePW":  m.AttendeePW,
+			"moderatorPW": m.ModeratorPW,
+			"forcedEnd":   m.ForcedEnd,
+		}}
 	}
-	c.events <- WsEvent{"created", WsEventData{
-		"id":          m.Id,
-		"created":     m.CreateTime.Unix(),
-		"attendeePW":  m.AttendeePW,
-		"moderatorPW": m.ModeratorPW,
-		"forcedEnd":   m.ForcedEnd,
-	}}
+	c.events <- response
 	return nil
 }
 
