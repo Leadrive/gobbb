@@ -59,8 +59,24 @@ func HandleCreate(c *Client, event WsEvent) error {
 	return nil
 }
 
-func HandleJoinURL(c *Client, event WsEvent) error { return nil }
-func HandleEnd(c *Client, event WsEvent) error     { return nil }
+func HandleJoinURL(c *Client, event WsEvent) error {
+	name, id, password := "", "", ""
+	if v, t := event.Data["name"]; t && nil != v {
+		name = v.(string)
+	}
+	if v, t := event.Data["id"]; t && nil != v {
+		id = v.(string)
+	}
+	if v, t := event.Data["password"]; t && nil != v {
+		password = v.(string)
+	}
+	c.events <- WsEvent{"joinURL", WsEventData{
+		"url": c.b3.JoinURL(name, id, password, bbb.EmptyOptions),
+	}}
+	return nil
+}
+
+func HandleEnd(c *Client, event WsEvent) error { return nil }
 
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
