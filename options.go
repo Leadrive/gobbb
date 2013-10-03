@@ -64,7 +64,9 @@ func reflectOptionValues(rv reflect.Value, skipFalse bool) url.Values {
 			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 				values.Set(name, strconv.FormatInt(value.Int(), 10))
 			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				values.Set(name, strconv.FormatUint(value.Uint(), 10))
+				if value := value.Uint(); value > 0 {
+					values.Set(name, strconv.FormatUint(value.Uint(), 10))
+				}
 			}
 		}
 	}
