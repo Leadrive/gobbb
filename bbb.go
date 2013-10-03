@@ -24,11 +24,8 @@ type BigBlueButton struct {
 	Url    *url.URL
 }
 
-func (b3 *BigBlueButton) Create(id string, options Options) (*Meeting, error) {
-	v := url.Values{"meetingID": {id}}
-	q := v.Encode() // + "&" + options.Encode()
-	q += "&checksum=" + b3.checksum("create", q)
-	u, _ := b3.Url.Parse("create?" + q)
+func (b3 *BigBlueButton) Create(id string, options OptionEncoder) (*Meeting, error) {
+	u := b3.makeURL("create", mergeUrlValues(url.Values{"meetingID": {id}}, options.Values()))
 	log.Println(u.String())
 	res, err := http.Get(u.String())
 	if nil != err {
@@ -38,23 +35,18 @@ func (b3 *BigBlueButton) Create(id string, options Options) (*Meeting, error) {
 	return LoadMeetingCreateResponse(res)
 }
 
-func (b3 *BigBlueButton) JoinURL(name, meetingID, password string, options Options) string {
-	v := url.Values{}
-	v.Set("fullName", name)
-	v.Set("meetingID", meetingID)
-	v.Set("password", password)
-	q := v.Encode() // + "&" + options.Encode()
-	q += "&checksum=" + b3.checksum("join", q)
-	u, _ := b3.Url.Parse("join?" + q)
-	return u.String()
+func (b3 *BigBlueButton) JoinURL(name, meetingID, password string, options OptionEncoder) string {
+	return b3.makeURL("join", mergeUrlValues(
+		url.Values{
+			"fullName":  {name},
+			"meetingID": {meetingID},
+			"password":  {password},
+		},
+		options.Values())).String()
 }
 
 func (b3 *BigBlueButton) IsMeetingRunning(id string) bool {
-	v := url.Values{}
-	v.Set("meetingID", id)
-	q := v.Encode()
-	q += "&checksum=" + b3.checksum("isMeetingRunning", q)
-	u, _ := b3.Url.Parse("isMeetingRunning?" + q)
+	u := b3.makeURL("isMeetingRunning", url.Values{"meetingID": {id}})
 	res, err := http.Get(u.String())
 	if nil != err {
 		return false
@@ -69,10 +61,7 @@ func (b3 *BigBlueButton) End(id, password string) bool {
 }
 
 func (b3 *BigBlueButton) MeetingInfo(id, password string) (*Meeting, error) {
-	v := url.Values{"meetingID": {id}, "password": {password}}
-	q := v.Encode()
-	q += "&checksum=" + b3.checksum("getMeetingInfo", q)
-	u, _ := b3.Url.Parse("getMeetingInfo?" + q)
+	u := b3.makeURL("getMeetingInfo", url.Values{"meetingID": {id}, "password": {password}})
 	res, err := http.Get(u.String())
 	if nil != err {
 		return nil, err
@@ -82,8 +71,7 @@ func (b3 *BigBlueButton) MeetingInfo(id, password string) (*Meeting, error) {
 }
 
 func (b3 *BigBlueButton) Meetings() []*Meeting {
-	q := "checksum=" + b3.checksum("getMeetings", "")
-	u, _ := b3.Url.Parse("getMeetings?" + q)
+	u := b3.makeURL("getMeetings", url.Values{})
 	log.Println(u.String())
 	res, err := http.Get(u.String())
 	if nil != err {
@@ -123,4 +111,26 @@ func (b3 *BigBlueButton) checksum(action, params string) string {
 	io.WriteString(h, params)
 	io.WriteString(h, b3.Secret)
 	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+func (b3 *BigBlueButton) makeURL(action string, query url.Values) *url.URL {
+	if _, t := query["checksum"]; !t {
+		query.Add("checksum", b3.checksum(action, query.Encode()))
+	}
+	u, _ := b3.Url.Parse(action + "?" + query.Encode())
+	return u
+}
+
+func mergeUrlValues(values ...url.Values) (m url.Values) {
+	m = url.Values{}
+	for _, v := range values {
+		for k, v := range v {
+			if _, t := m[k]; t {
+				m[k] = append(m[k], v...)
+			} else {
+				m[k] = v
+			}
+		}
+	}
+	return
 }

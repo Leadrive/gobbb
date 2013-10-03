@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
@@ -41,10 +42,11 @@ func HandleCreate(c *Client, event WsEvent) error {
 	if v, t := event.Data["id"]; t && nil != v {
 		id = v.(string)
 	}
-
+	var options bbb.CreateOptions
 	var response WsEvent
+	eventToOptions(event, &options)
 
-	if m, err := c.b3.Create(id, bbb.EmptyOptions); nil != err {
+	if m, err := c.b3.Create(id, &options); nil != err {
 		response = WsEvent{"create.fail", WsEventData{"error": err.Error()}}
 	} else {
 		response = WsEvent{"create.success", WsEventData{
@@ -70,8 +72,10 @@ func HandleJoinURL(c *Client, event WsEvent) error {
 	if v, t := event.Data["password"]; t && nil != v {
 		password = v.(string)
 	}
+	var options bbb.JoinOptions
+	eventToOptions(event, &options)
 	c.events <- WsEvent{"joinURL", WsEventData{
-		"url": c.b3.JoinURL(name, id, password, bbb.EmptyOptions),
+		"url": c.b3.JoinURL(name, id, password, &options),
 	}}
 	return nil
 }
@@ -213,4 +217,12 @@ func (e WsEventHandlerNotFound) Error() string {
 
 func newWsEventHandlerNotFound(e string) WsEventHandlerNotFound {
 	return WsEventHandlerNotFound(e)
+}
+
+func eventToOptions(event WsEvent, options interface{}) error {
+	if b, err := json.Marshal(event.Data); nil == err {
+		return json.Unmarshal(b, options)
+	} else {
+		return err
+	}
 }
