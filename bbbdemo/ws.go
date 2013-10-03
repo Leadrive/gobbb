@@ -66,6 +66,9 @@ func HandleJoinURL(c *Client, event WsEvent) error {
 	if v, t := event.Data["name"]; t && nil != v {
 		name = v.(string)
 	}
+	if v, t := event.Data["fullName"]; t && nil != v {
+		name = v.(string)
+	}
 	if v, t := event.Data["id"]; t && nil != v {
 		id = v.(string)
 	}
