@@ -47,6 +47,8 @@ func init() {
 				handler = HandleEnd
 			case "info":
 				handler = HandleMeetingInfo
+			case "meetings":
+				handler = HandleMeetings
 			default:
 				handler = func(_ *Client, ev WsEvent) error {
 					return _error("Unhandled event '" + ev.Event + "'")

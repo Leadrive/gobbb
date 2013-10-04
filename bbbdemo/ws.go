@@ -83,7 +83,7 @@ func HandleJoinURL(c *Client, event WsEvent) error {
 	return nil
 }
 
-func HandleEnd(c *Client, event WsEvent) error { return nil }
+func HandleEnd(c *Client, event WsEvent) error { return _error("end not implemented") }
 
 func HandleMeetingInfo(c *Client, event WsEvent) error {
 	id, password := "", ""
@@ -116,13 +116,30 @@ func HandleMeetingInfo(c *Client, event WsEvent) error {
 	return nil
 }
 
+func HandleMeetings(c *Client, event WsEvent) error {
+	meetings := c.b3.Meetings()
+	ev := make([]WsEventData, len(meetings))
+	for k, m := range meetings {
+		ev[k] = WsEventData{
+			"id":          m.Id,
+			"created":     m.CreateTime.Unix(),
+			"attendeePW":  m.AttendeePW,
+			"moderatorPW": m.ModeratorPW,
+			"forcedEnd":   m.ForcedEnd,
+		}
+	}
+	c.events <- WsEvent{"meetings", WsEventData{"meetings": ev}}
+	return nil
+}
+
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
-		"connect": HandleConnect,
-		"create":  HandleCreate,
-		"joinURL": HandleJoinURL,
-		"end":     HandleEnd,
-		"info":    HandleMeetingInfo,
+		"connect":  HandleConnect,
+		"create":   HandleCreate,
+		"joinURL":  HandleJoinURL,
+		"end":      HandleEnd,
+		"info":     HandleMeetingInfo,
+		"meetings": HandleMeetings,
 	},
 	c: map[*Client]struct{}{},
 }
