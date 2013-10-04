@@ -85,12 +85,44 @@ func HandleJoinURL(c *Client, event WsEvent) error {
 
 func HandleEnd(c *Client, event WsEvent) error { return nil }
 
+func HandleMeetingInfo(c *Client, event WsEvent) error {
+	id, password := "", ""
+	if v, t := event.Data["id"]; t && nil != v {
+		id = v.(string)
+	}
+	if v, t := event.Data["password"]; t && nil != v {
+		password = v.(string)
+	}
+	m, err := c.b3.MeetingInfo(id, password)
+	if nil != err {
+		c.events <- WsEvent{"info.fail", WsEventData{"error": err.Error()}}
+		return nil
+	}
+	c.events <- WsEvent{"info.succsess", WsEventData{
+		"id":          m.Id,
+		"name":        m.Name,
+		"created":     m.CreateTime.Unix(),
+		"attendeePW":  m.AttendeePW,
+		"moderatorPW": m.ModeratorPW,
+		"running":     m.Running,
+		"recording":   m.Recording,
+		"forcedEnd":   m.ForcedEnd,
+		"stratTime":   m.StartTime.Unix(),
+		"endTime":     m.EndTime.Unix(),
+		"numUsers":    m.NumUsers,
+		"maxUsers":    m.MaxUsers,
+		"numMod":      m.NumMod,
+	}}
+	return nil
+}
+
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
 		"connect": HandleConnect,
 		"create":  HandleCreate,
 		"joinURL": HandleJoinURL,
 		"end":     HandleEnd,
+		"info":    HandleMeetingInfo,
 	},
 	c: map[*Client]struct{}{},
 }

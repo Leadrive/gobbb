@@ -45,6 +45,8 @@ func init() {
 				handler = HandleJoinURL
 			case "end":
 				handler = HandleEnd
+			case "info":
+				handler = HandleMeetingInfo
 			default:
 				handler = func(_ *Client, ev WsEvent) error {
 					return _error("Unhandled event '" + ev.Event + "'")
