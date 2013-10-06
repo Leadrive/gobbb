@@ -1,6 +1,7 @@
 package bbb
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"fmt"
 	"io"
@@ -26,8 +27,19 @@ type BigBlueButton struct {
 
 func (b3 *BigBlueButton) Create(id string, options OptionEncoder) (*Meeting, error) {
 	u := b3.makeURL("create", mergeUrlValues(url.Values{"meetingID": {id}}, options.Values()))
-	log.Println(u.String())
-	res, err := http.Get(u.String())
+	var (
+		res *http.Response
+		err error
+	)
+	if options, ok := options.(*CreateOptions); ok && len(options.Documents) > 0 {
+		if mods, oops := buildModXML_Presentation(options.Documents); nil == oops {
+			res, err = http.Post(u.String(), "text/xml", bytes.NewReader(mods))
+		} else {
+			err = oops
+		}
+	} else {
+		res, err = http.Get(u.String())
+	}
 	if nil != err {
 		return nil, err
 	}

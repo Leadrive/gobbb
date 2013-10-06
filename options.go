@@ -11,23 +11,30 @@ import (
 var EmptyOptions = &emptyOptions{}
 
 type CreateOptions struct {
-	Name            string        `json:"name"`
-	AttendeePW      string        `json:"attendeePW"`
-	ModeratorPW     string        `json:"moderatorPW"`
-	Welcome         string        `json:"welcome"`
-	DialNumber      string        `json:"dialNumber"`
-	VoiceBridge     string        `json:"voiceBridge"`
-	WebVoice        string        `json:"webVoice"`
-	LogoutURL       string        `json:"logoutURL"`
-	MaxParticipants uint          `json:"maxParticipants"`
-	Record          bool          `json:"record"`
-	Duration        time.Duration `json:"duration"`
+	Name            string         `json:"name"`
+	AttendeePW      string         `json:"attendeePW"`
+	ModeratorPW     string         `json:"moderatorPW"`
+	Welcome         string         `json:"welcome"`
+	DialNumber      string         `json:"dialNumber"`
+	VoiceBridge     string         `json:"voiceBridge"`
+	WebVoice        string         `json:"webVoice"`
+	LogoutURL       string         `json:"logoutURL"`
+	MaxParticipants uint           `json:"maxParticipants"`
+	Record          bool           `json:"record"`
+	Duration        time.Duration  `json:"duration"`
+	Documents       []Presentation `json:documents`
 }
 
 type JoinOptions struct {
 	CreateTime   time.Time `json:"createTime"`
 	UserId       string    `json:"userID"`
 	WebVoiceConf string    `json:"webVoiceConf"`
+}
+
+type Presentation struct {
+	Name  string `json:"name,omitempty" xml:"name,attr,omitempty"`
+	Url   string `json:"url,omitempty"  xml:"url,attr,omitempty"`
+	Value []byte `json:"name,omitempty" xml:",chardata"`
 }
 
 type OptionEncoder interface {
