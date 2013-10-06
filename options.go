@@ -46,33 +46,38 @@ type emptyOptions struct{}
 func (opt *emptyOptions) Values() url.Values { return url.Values{} }
 
 func (opt *CreateOptions) Values() url.Values {
-	return reflectOptionValues(reflect.ValueOf(*opt), true)
+	return reflectOptionValues(reflect.ValueOf(*opt), true,
+		func(k string, _ reflect.Value) bool {
+			return "documents" != k
+		})
 }
 
 func (opt *JoinOptions) Values() url.Values {
-	return reflectOptionValues(reflect.ValueOf(*opt), true)
+	return reflectOptionValues(reflect.ValueOf(*opt), true, nil)
 }
 
-func reflectOptionValues(rv reflect.Value, skipFalse bool) url.Values {
+func reflectOptionValues(rv reflect.Value, skipFalse bool,
+	accept func(string, reflect.Value) bool) url.Values {
 	values := url.Values{}
 	if reflect.Struct == rv.Kind() {
 		for i := 0; i < rv.NumField(); i++ {
-			name := optionNameFromStructField(rv.Type().Field(i))
-			value := rv.Field(i)
-			switch value.Kind() {
-			case reflect.Bool:
-				if value := value.Bool(); value || !skipFalse {
-					values.Set(name, strconv.FormatBool(value))
-				}
-			case reflect.String:
-				if value := value.String(); "" != value {
-					values.Set(name, value)
-				}
-			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-				values.Set(name, strconv.FormatInt(value.Int(), 10))
-			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-				if value := value.Uint(); value > 0 {
-					values.Set(name, strconv.FormatUint(value, 10))
+			if name, value := optionNameFromStructField(rv.Type().Field(i)),
+				rv.Field(i); nil == accept || accept(name, value) {
+				switch value.Kind() {
+				case reflect.Bool:
+					if value := value.Bool(); value || !skipFalse {
+						values.Set(name, strconv.FormatBool(value))
+					}
+				case reflect.String:
+					if value := value.String(); "" != value {
+						values.Set(name, value)
+					}
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+					values.Set(name, strconv.FormatInt(value.Int(), 10))
+				case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+					if value := value.Uint(); value > 0 {
+						values.Set(name, strconv.FormatUint(value, 10))
+					}
 				}
 			}
 		}
