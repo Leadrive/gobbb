@@ -45,6 +45,8 @@ func init() {
 				handler = HandleJoinURL
 			case "end":
 				handler = HandleEnd
+			case "running":
+				handler = HandleIsMeetingRunning
 			case "info":
 				handler = HandleMeetingInfo
 			case "meetings":
