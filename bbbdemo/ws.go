@@ -83,7 +83,19 @@ func HandleJoinURL(c *Client, event WsEvent) error {
 	return nil
 }
 
-func HandleEnd(c *Client, event WsEvent) error { return _error("end not implemented") }
+func HandleEnd(c *Client, event WsEvent) error {
+	id, password := "", ""
+	if v, t := event.Data["id"]; t && nil != v {
+		id = v.(string)
+	}
+	if v, t := event.Data["password"]; t && nil != v {
+		password = v.(string)
+	}
+	c.events <- WsEvent{"end", WsEventData{
+		"ended": b3.End(id, password),
+	}}
+	return nil
+}
 
 func HandleIsMeetingRunning(c *Client, event WsEvent) error {
 	id := ""
