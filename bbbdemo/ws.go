@@ -46,7 +46,11 @@ func HandleCreate(c *Client, event WsEvent) error {
 	eventToOptions(event, &options)
 
 	if m, err := c.b3.Create(id, &options); nil != err {
-		c.events <- WsEvent{"create.fail", WsEventData{"error": err.Error()}}
+		ev := WsEvent{"create.fail", WsEventData{"error": err.Error()}}
+		if v, t := event.Data["__txid"]; t {
+			ev.Data["__txid"] = v.(string)
+		}
+		c.events <- ev
 	} else {
 		ev := WsEvent{"create.success", WsEventData{
 			"id":          m.Id,
@@ -94,6 +98,9 @@ func HandleEnd(c *Client, event WsEvent) error {
 		password = v.(string)
 	}
 	ev := WsEvent{"end", WsEventData{"ended": false, "id": id}}
+	if v, t := event.Data["__txid"]; t {
+		ev.Data["__txid"] = v.(string)
+	}
 	if ok := b3.End(id, password); ok {
 		ev.Data["ended"] = true
 		c.handler.Broadcast(ev)
