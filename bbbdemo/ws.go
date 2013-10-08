@@ -143,7 +143,7 @@ func HandleMeetingInfo(c *Client, event WsEvent) error {
 		"running":     m.Running,
 		"recording":   m.Recording,
 		"forcedEnd":   m.ForcedEnd,
-		"stratTime":   m.StartTime.Unix(),
+		"startTime":   m.StartTime.Unix(),
 		"endTime":     m.EndTime.Unix(),
 		"numUsers":    m.NumUsers,
 		"maxUsers":    m.MaxUsers,
