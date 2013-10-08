@@ -2,7 +2,6 @@ package bbb
 
 import (
 	"encoding/xml"
-	"log"
 	"net/http"
 	"time"
 
@@ -12,12 +11,11 @@ import (
 func LoadResponseXML(r *http.Response) (response *xmlx.Node, err error) {
 	var doc *xmlx.Document = xmlx.New()
 	if err = doc.LoadStream(r.Body, nil); nil != err {
-		log.Println("Error:", err)
 		return
 	}
 	response = doc.SelectNode("", "response")
 	if code := response.S("", "returncode"); code != "SUCCESS" {
-		err = xmlError(code + " " + response.String())
+		err = xmlError(code + " " + response.S("", "messageKey"))
 	}
 	return
 }
@@ -63,7 +61,6 @@ func LoadIsMeetingRunningResponse(r *http.Response) bool {
 func LoadMeetigsResponse(r *http.Response) []*Meeting {
 	if response, err := LoadResponseXML(r); nil == err {
 		if nodes := response.SelectNodes("", "meeting"); len(nodes) > 0 {
-			log.Println("Loading", len(nodes), "meetings")
 			meetings := make([]*Meeting, len(nodes))
 			for index, meeting := range nodes {
 				meetings[index] = xml2meeting(meeting)

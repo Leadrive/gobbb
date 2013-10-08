@@ -5,7 +5,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -69,15 +68,13 @@ func (b3 *BigBlueButton) IsMeetingRunning(id string) bool {
 
 func (b3 *BigBlueButton) End(id, password string) bool {
 	u := b3.makeURL("end", url.Values{"meetingID": {id}, "password": {password}})
-	_, err := http.Get(u.String())
-	if nil != err {
-		return false
-	}
-	for retries := 0; retries < 10; retries++ {
-		if _, err := b3.MeetingInfo(id, password); nil != err {
-			return true
+	if _, err := http.Get(u.String()); nil == err {
+		for retries := 0; retries < 10; retries++ {
+			if _, err := b3.MeetingInfo(id, password); nil != err {
+				return true
+			}
+			time.Sleep(2 * time.Second)
 		}
-		time.Sleep(2 * time.Second)
 	}
 	return false
 }
@@ -94,7 +91,6 @@ func (b3 *BigBlueButton) MeetingInfo(id, password string) (*Meeting, error) {
 
 func (b3 *BigBlueButton) Meetings() []*Meeting {
 	u := b3.makeURL("getMeetings", url.Values{})
-	log.Println(u.String())
 	res, err := http.Get(u.String())
 	if nil != err {
 		return []*Meeting{}
