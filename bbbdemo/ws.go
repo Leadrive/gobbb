@@ -43,21 +43,23 @@ func HandleCreate(c *Client, event WsEvent) error {
 		id = v.(string)
 	}
 	var options bbb.CreateOptions
-	var response WsEvent
 	eventToOptions(event, &options)
 
 	if m, err := c.b3.Create(id, &options); nil != err {
-		response = WsEvent{"create.fail", WsEventData{"error": err.Error()}}
+		c.events <- WsEvent{"create.fail", WsEventData{"error": err.Error()}}
 	} else {
-		response = WsEvent{"create.success", WsEventData{
+		ev := WsEvent{"create.success", WsEventData{
 			"id":          m.Id,
 			"created":     m.CreateTime.Unix(),
 			"attendeePW":  m.AttendeePW,
 			"moderatorPW": m.ModeratorPW,
 			"forcedEnd":   m.ForcedEnd,
 		}}
+		if v, t := event.Data["__txid"]; t {
+			ev.Data["__txid"] = v.(string)
+		}
+		c.handler.Broadcast(ev)
 	}
-	c.events <- response
 	return nil
 }
 
@@ -91,9 +93,13 @@ func HandleEnd(c *Client, event WsEvent) error {
 	if v, t := event.Data["password"]; t && nil != v {
 		password = v.(string)
 	}
-	c.events <- WsEvent{"end", WsEventData{
-		"ended": b3.End(id, password),
-	}}
+	ev := WsEvent{"end", WsEventData{"ended": false, "id": id}}
+	if ok := b3.End(id, password); ok {
+		ev.Data["ended"] = true
+		c.handler.Broadcast(ev)
+	} else {
+		c.events <- ev
+	}
 	return nil
 }
 
@@ -210,7 +216,6 @@ func (c *Client) Reader() {
 		var ev WsEvent
 		if err := websocket.JSON.Receive(c.conn, &ev); nil != err {
 			if io.EOF == err {
-				log.Printf("Reader[%s]: %s", c.address, err)
 				c.done <- struct{}{}
 				return
 			}
