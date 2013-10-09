@@ -168,15 +168,41 @@ func HandleMeetings(c *Client, event WsEvent) error {
 	return nil
 }
 
+func HandleRecordings(c *Client, event WsEvent) (err error) {
+	var meetings []string
+	if v, t := event.Data["meetings"]; t {
+		meetings = itos(v)
+	}
+	recordings := c.b3.Recordings(meetings)
+	ev := make([]WsEventData, len(recordings))
+	for k, r := range recordings {
+		ev[k] = WsEventData{
+			"recordId":  r.RecordId,
+			"meetingId": r.MeetingId,
+			"name":      r.Name,
+			"startTime": r.StartTime.Unix(),
+			"endTime":   r.EndTime.Unix(),
+			"playback": WsEventData{
+				"type": r.Playback.Type,
+				"url":  r.Playback.Url,
+				"len":  r.Playback.Len,
+			},
+		}
+	}
+	c.events <- WsEvent{"recordings", WsEventData{"recordings": ev}}
+	return
+}
+
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
-		"connect":  HandleConnect,
-		"create":   HandleCreate,
-		"joinURL":  HandleJoinURL,
-		"end":      HandleEnd,
-		"running":  HandleIsMeetingRunning,
-		"info":     HandleMeetingInfo,
-		"meetings": HandleMeetings,
+		"connect":    HandleConnect,
+		"create":     HandleCreate,
+		"joinURL":    HandleJoinURL,
+		"end":        HandleEnd,
+		"running":    HandleIsMeetingRunning,
+		"info":       HandleMeetingInfo,
+		"meetings":   HandleMeetings,
+		"recordings": HandleRecordings,
 	},
 	c: map[*Client]struct{}{},
 }
@@ -313,4 +339,16 @@ func eventToOptions(event WsEvent, options interface{}) error {
 	} else {
 		return err
 	}
+}
+
+func itos(v interface{}) (s []string) {
+	if v, ok := v.([]interface{}); ok {
+		s = make([]string, len(v))
+		for k, v := range v {
+			s[k] = v.(string)
+		}
+		return
+
+	}
+	panic("Too bad")
 }
