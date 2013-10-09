@@ -60,6 +60,10 @@ func init() {
 				handlerFunc = HandleMeetings
 			case "recordings":
 				handlerFunc = HandleRecordings
+			case "recordings.publish":
+				txid = addEventId(&event)
+				handlerFunc = HandlePublishRecordings
+				responder = uhMkIdResponder(txid)
 			default:
 				handlerFunc = func(_ *Client, ev WsEvent) error {
 					return _error("Unhandled event '" + ev.Event + "'")

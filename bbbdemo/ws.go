@@ -193,16 +193,42 @@ func HandleRecordings(c *Client, event WsEvent) (err error) {
 	return
 }
 
+func HandlePublishRecordings(c *Client, event WsEvent) error {
+	recordings, publish := []string{}, true
+	if v, t := event.Data["recordings"]; t {
+		recordings = itos(v)
+	}
+	if v, t := event.Data["publish"]; t {
+		publish = v.(bool)
+	}
+	ev := WsEvent{"recordings", WsEventData{
+		"recordings": recordings,
+		"published":  false,
+	}}
+	if v, t := event.Data["__txid"]; t {
+		ev.Data["__txid"] = v.(string)
+	}
+	if c.b3.PublishRecordings(recordings, publish) {
+		ev.Data["published"] = true
+		c.handler.Broadcast(ev)
+	} else {
+		c.events <- ev
+	}
+	return nil
+}
+
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
-		"connect":    HandleConnect,
-		"create":     HandleCreate,
-		"joinURL":    HandleJoinURL,
-		"end":        HandleEnd,
-		"running":    HandleIsMeetingRunning,
-		"info":       HandleMeetingInfo,
-		"meetings":   HandleMeetings,
-		"recordings": HandleRecordings,
+		"connect":  HandleConnect,
+		"create":   HandleCreate,
+		"joinURL":  HandleJoinURL,
+		"end":      HandleEnd,
+		"running":  HandleIsMeetingRunning,
+		"info":     HandleMeetingInfo,
+		"meetings": HandleMeetings,
+
+		"recordings":         HandleRecordings,
+		"recordings.publish": HandlePublishRecordings,
 	},
 	c: map[*Client]struct{}{},
 }
