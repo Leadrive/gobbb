@@ -89,7 +89,11 @@ func PgConnect(w http.ResponseWriter, req *http.Request) {
 
 func PgCreate(w http.ResponseWriter, req *http.Request) {
 	if "POST" == req.Method {
-		if m, err := b3.Create(req.FormValue("id"), bbb.EmptyOptions); nil != err {
+		options := &bbb.CreateOptions{
+			Record: req.FormValue("record") == "1",
+			Name:   req.FormValue("name"),
+		}
+		if m, err := b3.Create(req.FormValue("id"), options); nil != err {
 			http.Error(w, err.Error(), http.StatusTeapot)
 			return
 		} else {
@@ -216,6 +220,7 @@ const pageCreateTemplate = `
       <form action="/create" method="post">
         <input type="text" name="id"/>
         <input type="text" name="name"/>
+        <input type="checkbox" name="record" value="1"/>
         <input type="submit"/>
       </form>
     </div>
