@@ -64,6 +64,10 @@ func init() {
 				txid = addEventId(&event)
 				handlerFunc = HandlePublishRecordings
 				responder = uhMkIdResponder(txid)
+			case "recordings.delete":
+				txid = addEventId(&event)
+				handlerFunc = HandleDeleteRecordings
+				responder = uhMkIdResponder(txid)
 			default:
 				handlerFunc = func(_ *Client, ev WsEvent) error {
 					return _error("Unhandled event '" + ev.Event + "'")

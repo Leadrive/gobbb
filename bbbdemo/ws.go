@@ -217,6 +217,27 @@ func HandlePublishRecordings(c *Client, event WsEvent) error {
 	return nil
 }
 
+func HandleDeleteRecordings(c *Client, event WsEvent) error {
+	var recordings []string
+	if v, t := event.Data["recordings"]; t {
+		recordings = itos(v)
+	}
+	ev := WsEvent{"recordings", WsEventData{
+		"recordings": recordings,
+		"deleted":    false,
+	}}
+	if v, t := event.Data["__txid"]; t {
+		ev.Data["__txid"] = v.(string)
+	}
+	if c.b3.DeleteRecordings(recordings) {
+		ev.Data["deleted"] = true
+		c.handler.Broadcast(ev)
+	} else {
+		c.events <- ev
+	}
+	return nil
+}
+
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
 		"connect":  HandleConnect,
@@ -229,6 +250,7 @@ var handler *WsEventHandler = &WsEventHandler{
 
 		"recordings":         HandleRecordings,
 		"recordings.publish": HandlePublishRecordings,
+		"recordings.delete":  HandleDeleteRecordings,
 	},
 	c: map[*Client]struct{}{},
 }
