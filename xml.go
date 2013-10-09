@@ -71,6 +71,35 @@ func LoadMeetigsResponse(r *http.Response) []*Meeting {
 	return []*Meeting{}
 }
 
+func LoadRecordingsResponse(r *http.Response) []*Recording {
+	if response, err := LoadResponseXML(r); nil == err {
+		if nodes := response.SelectNodes("", "recording"); len(nodes) > 0 {
+			recordings := make([]*Recording, len(nodes))
+			for index, recording := range nodes {
+				playback := recording.SelectNode("", "playback")
+				recordings[index] = &Recording{
+					RecordId:  recording.S("", "recordId"),
+					MeetingId: recording.S("", "meetingId"),
+					Name:      recording.S("", "name"),
+					StartTime: time.Unix(recording.I64("", "startTime"), 0),
+					EndTime:   time.Unix(recording.I64("", "endTime"), 0),
+					Playback: struct {
+						Type string
+						Url  string
+						Len  int
+					}{
+						playback.S("", "type"),
+						playback.S("", "url"),
+						playback.I("", "length"),
+					},
+				}
+			}
+			return recordings
+		}
+	}
+	return []*Recording{}
+}
+
 func LoadServerVersion(r *http.Response) string {
 	if response, err := LoadResponseXML(r); nil == err {
 		return response.S("", "version")

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -99,8 +100,18 @@ func (b3 *BigBlueButton) Meetings() []*Meeting {
 	return LoadMeetigsResponse(res)
 }
 
-func (b3 *BigBlueButton) Recordings(meetingId string) []*Recording {
-	return []*Recording(nil)
+func (b3 *BigBlueButton) Recordings(meetings []string) []*Recording {
+	q := url.Values{}
+	if len(meetings) > 0 {
+		q.Set("meetingID", strings.Join(meetings, ","))
+	}
+	u := b3.makeURL("getRecordings", q)
+	res, err := http.Get(u.String())
+	if nil != err {
+		return []*Recording{}
+	}
+	defer res.Body.Close()
+	return LoadRecordingsResponse(res)
 }
 
 func (b3 *BigBlueButton) PublishRecordings(id string, publish bool) bool {

@@ -9,7 +9,12 @@ type Recording struct {
 	MeetingId string
 	Name      string
 	Published bool
-	startTime time.Time
-	endTime   time.Time
+	StartTime time.Time
+	EndTime   time.Time
 	Metadata  map[string]interface{}
+	Playback  struct {
+		Type string
+		Url  string
+		Len  int
+	}
 }
