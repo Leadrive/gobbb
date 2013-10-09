@@ -43,7 +43,7 @@ namespace bbb {
 		}
 
 		public function end($id, $password) {
-			$event = $this->emit("end", compact("id", "password"));
+			return $this->emit("end", compact("id", "password"))->data->ended;
 		}
 
 		public function isMeetingRunning($id) {
@@ -56,6 +56,18 @@ namespace bbb {
 
 		public function getMeetings() {
 			return $this->emit("meetings")->data->meetings;
+		}
+
+		public function getRecordings(array $meetings = array()) {
+			return $this->emit("recordings", compact("meetings"))->data->recordings;
+		}
+
+		public function publishRecordings(array $recordings, $publish = true) {
+			return $this->emit("recordings.publish", compact("recordings", "publish"))->data;
+		}
+
+		public function deleteRecordings(array $recordings) {
+			return $this->emit("recordings.delete", compact("recordings"))->data;
 		}
 
 		private function emit($event, array $data = array()) {
@@ -101,6 +113,8 @@ namespace {
 		$meeting->id,
 		$meeting->attendeePW
 	), PHP_EOL;
+
+	var_dump($b4->getRecordings());
 }
 
 // object(stdClass)#9 (5) {
@@ -185,3 +199,27 @@ namespace {
 //   }
 // }
 // JoinURL: https://my.big.blue.button.com/bigbluebutton/api/join?checksum=9060a97ac439e64c5f1fe84b2d12992caf1baf49&fullName=Attendee+524ee0775daa4&meetingID=524ee076d2ae5&password=Ktod567K
+// array(1) {
+//   [0]=>
+//   object(stdClass)#17 (6) {
+//     ["endTime"]=>
+//     int(1381314126745)
+//     ["meetingId"]=>
+//     string(0) ""
+//     ["name"]=>
+//     string(9) "Meeting 1"
+//     ["playback"]=>
+//     object(stdClass)#14 (3) {
+//       ["len"]=>
+//       int(3)
+//       ["type"]=>
+//       string(12) "presentation"
+//       ["url"]=>
+//       string(122) "http://my.big.blue.button.com/playback/presentation/playback.html?meetingId=09672563b912fc7919d14513124bb962fd6a42d7-1381313971571"
+//     }
+//     ["recordId"]=>
+//     string(0) ""
+//     ["startTime"]=>
+//     int(1381313999223)
+//   }
+// }
