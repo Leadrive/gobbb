@@ -65,7 +65,7 @@ func (b3 *BigBlueButton) IsMeetingRunning(id string) bool {
 		return false
 	}
 	defer res.Body.Close()
-	return LoadIsMeetingRunningResponse(res)
+	return LoadBoolResponse(res, "running")
 }
 
 func (b3 *BigBlueButton) End(id, password string) bool {
@@ -126,7 +126,7 @@ func (b3 *BigBlueButton) PublishRecordings(recordings []string, publish bool) bo
 			return false
 		}
 		defer res.Body.Close()
-		return LoadPublishRecordingsResponse(res)
+		return LoadBoolResponse(res, "published")
 	}
 	return false
 }
@@ -141,7 +141,7 @@ func (b3 *BigBlueButton) DeleteRecordings(recordings []string) bool {
 			return false
 		}
 		defer res.Body.Close()
-		return LoadDeleteRecordingsResponse(res)
+		return LoadBoolResponse(res, "deleted")
 	}
 	return false
 }

@@ -51,13 +51,6 @@ func LoadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
 	}
 }
 
-func LoadIsMeetingRunningResponse(r *http.Response) bool {
-	if response, err := LoadResponseXML(r); nil == err {
-		return response.B("", "running")
-	}
-	return false
-}
-
 func LoadMeetigsResponse(r *http.Response) []*Meeting {
 	if response, err := LoadResponseXML(r); nil == err {
 		if nodes := response.SelectNodes("", "meeting"); len(nodes) > 0 {
@@ -100,16 +93,9 @@ func LoadRecordingsResponse(r *http.Response) []*Recording {
 	return []*Recording{}
 }
 
-func LoadPublishRecordingsResponse(r *http.Response) bool {
+func LoadBoolResponse(r *http.Response, element string) bool {
 	if response, err := LoadResponseXML(r); nil == err {
-		return response.B("", "published")
-	}
-	return false
-}
-
-func LoadDeleteRecordingsResponse(r *http.Response) bool {
-	if response, err := LoadResponseXML(r); nil == err {
-		return response.B("", "deleted")
+		return response.B("", element)
 	}
 	return false
 }
