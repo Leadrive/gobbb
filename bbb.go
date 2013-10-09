@@ -131,7 +131,18 @@ func (b3 *BigBlueButton) PublishRecordings(recordings []string, publish bool) bo
 	return false
 }
 
-func (b3 *BigBlueButton) DeleteRecordings(id string) bool {
+func (b3 *BigBlueButton) DeleteRecordings(recordings []string) bool {
+	if len(recordings) > 0 {
+		u := b3.makeURL("deleteRecordings", url.Values{
+			"recordID": {strings.Join(recordings, ",")},
+		})
+		res, err := http.Get(u.String())
+		if nil != err {
+			return false
+		}
+		defer res.Body.Close()
+		return LoadDeleteRecordingsResponse(res)
+	}
 	return false
 }
 

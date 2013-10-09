@@ -107,6 +107,13 @@ func LoadPublishRecordingsResponse(r *http.Response) bool {
 	return false
 }
 
+func LoadDeleteRecordingsResponse(r *http.Response) bool {
+	if response, err := LoadResponseXML(r); nil == err {
+		return response.B("", "deleted")
+	}
+	return false
+}
+
 func LoadServerVersion(r *http.Response) string {
 	if response, err := LoadResponseXML(r); nil == err {
 		return response.S("", "version")
