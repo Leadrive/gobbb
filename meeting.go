@@ -25,5 +25,5 @@ type Meeting struct {
 type Attendee struct {
 	UserId string
 	Name   string
-	role   string
+	Role   string
 }

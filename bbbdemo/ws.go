@@ -134,6 +134,14 @@ func HandleMeetingInfo(c *Client, event WsEvent) error {
 		c.events <- WsEvent{"info.fail", WsEventData{"error": err.Error()}}
 		return nil
 	}
+	attendees := make([]WsEventData, len(m.Attendees))
+	for k, v := range m.Attendees {
+		attendees[k] = WsEventData{
+			"userID": v.UserId,
+			"name":   v.Name,
+			"role":   v.Role,
+		}
+	}
 	c.events <- WsEvent{"info.succsess", WsEventData{
 		"id":          m.Id,
 		"name":        m.Name,
@@ -148,6 +156,7 @@ func HandleMeetingInfo(c *Client, event WsEvent) error {
 		"numUsers":    m.NumUsers,
 		"maxUsers":    m.MaxUsers,
 		"numMod":      m.NumMod,
+		"attendees":   attendees,
 	}}
 	return nil
 }

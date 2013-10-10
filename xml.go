@@ -30,6 +30,15 @@ func LoadMeetingCreateResponse(r *http.Response) (*Meeting, error) {
 
 func LoadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
 	if response, err := LoadResponseXML(r); nil == err {
+		nodes := response.SelectNodes("", "attendee")
+		attendees := make([]Attendee, len(nodes))
+		for k, v := range nodes {
+			attendees[k] = Attendee{
+				UserId: v.S("", "userID"),
+				Name:   v.S("", "fullName"),
+				Role:   v.S("", "role"),
+			}
+		}
 		return &Meeting{
 			Id:          response.S("", "meetingID"),
 			Name:        response.S("", "meetingName"),
@@ -45,6 +54,7 @@ func LoadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
 			NumUsers:    response.I("", "participantCount"),
 			NumMod:      response.I("", "moderatorCount"),
 			MaxUsers:    response.I("", "maxUsers"),
+			Attendees:   attendees,
 		}, nil
 	} else {
 		return nil, err
