@@ -70,6 +70,14 @@ namespace bbb {
 			return $this->emit("recordings.delete", compact("recordings"))->data;
 		}
 
+		public function getDefaultConfigXML() {
+			return $this->emit("config.default")->data;
+		}
+
+		public function setConfigXML($meeting, \stdclass $config) {
+			return $this->emit("config.set", compact("meeting", "config"))->data->token;
+		}
+
 		private function emit($event, array $data = array()) {
 			$this->client->setRawBody(self::message($event, $data));
 			$response = $this->client->send();
@@ -115,6 +123,13 @@ namespace {
 	), PHP_EOL;
 
 	var_dump($b4->getRecordings());
+
+	$config = $b4->getDefaultConfigXML();
+	var_dump(
+		$config,
+		$b4->setConfigXML($meeting->id, $config),
+		$b4->end($meeting->id, $meeting->moderatorPW)
+	);
 }
 
 // object(stdClass)#9 (5) {

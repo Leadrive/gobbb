@@ -68,6 +68,10 @@ func init() {
 				txid = addEventId(&event)
 				handlerFunc = HandleDeleteRecordings
 				responder = uhMkIdResponder(txid)
+			case "config.default":
+				handlerFunc = HandleDefaultConfigXML
+			case "config.set":
+				handlerFunc = HandleSetConfigXML
 			default:
 				handlerFunc = func(_ *Client, ev WsEvent) error {
 					return _error("Unhandled event '" + ev.Event + "'")

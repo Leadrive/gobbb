@@ -247,6 +247,47 @@ func HandleDeleteRecordings(c *Client, event WsEvent) error {
 	return nil
 }
 
+func HandleDefaultConfigXML(c *Client, event WsEvent) error {
+	if conf, err := c.b3.DefaultConfigXML(); nil != err {
+		c.events <- WsEvent{"config.error", WsEventData{
+			"error": err.Error(),
+		}}
+	} else {
+		var data WsEventData
+		if err := jsoncp(&data, conf); nil != err {
+			return err
+		}
+		c.events <- WsEvent{"config.default", data}
+	}
+	return nil
+}
+
+func HandleSetConfigXML(c *Client, event WsEvent) error {
+	var conf bbb.ConfigXML
+	var config interface{}
+	var meeting = ""
+	if v, t := event.Data["config"]; t {
+		config = v
+	}
+	if v, t := event.Data["meeting"]; t {
+		meeting = v.(string)
+	}
+	if err := jsoncp(&conf, config); nil != err {
+		return err
+	}
+	if token, err := c.b3.SetConfigXML(meeting, &conf); nil != err {
+		c.events <- WsEvent{"config.error", WsEventData{
+			"error": err.Error(),
+		}}
+	} else {
+		c.events <- WsEvent{"config.set", WsEventData{
+			"meeting": meeting,
+			"token":   token,
+		}}
+	}
+	return nil
+}
+
 var handler *WsEventHandler = &WsEventHandler{
 	h: map[string]WsEventHandlerFunc{
 		"connect":  HandleConnect,
@@ -260,6 +301,9 @@ var handler *WsEventHandler = &WsEventHandler{
 		"recordings":         HandleRecordings,
 		"recordings.publish": HandlePublishRecordings,
 		"recordings.delete":  HandleDeleteRecordings,
+
+		"config.default": HandleDefaultConfigXML,
+		"config.set":     HandleSetConfigXML,
 	},
 	c: map[*Client]struct{}{},
 }
@@ -408,4 +452,15 @@ func itos(v interface{}) (s []string) {
 
 	}
 	panic("Too bad")
+}
+
+func jsoncp(dst interface{}, src interface{}) error {
+	if b, err := json.Marshal(src); nil == err {
+		if err := json.Unmarshal(b, dst); nil != err {
+			return err
+		}
+	} else {
+		return err
+	}
+	return nil
 }
