@@ -29,6 +29,8 @@ type JoinOptions struct {
 	CreateTime   time.Time `json:"createTime"`
 	UserId       string    `json:"userID"`
 	WebVoiceConf string    `json:"webVoiceConf"`
+	ConfigToken  string    `json:"configToken"`
+	AvatarURL    string    `json:"avatarURL"`
 }
 
 type Presentation struct {
