@@ -110,9 +110,9 @@ func LoadBoolResponse(r *http.Response, element string) bool {
 	return false
 }
 
-func LoadServerVersion(r *http.Response) string {
+func LoadStringResponse(r *http.Response, element string) string {
 	if response, err := LoadResponseXML(r); nil == err {
-		return response.S("", "version")
+		return response.S("", element)
 	} else {
 		return err.Error()
 	}

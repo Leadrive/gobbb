@@ -152,7 +152,7 @@ func (b3 *BigBlueButton) ServerVersion() string {
 		return "Error: " + err.Error()
 	}
 	defer res.Body.Close()
-	return LoadServerVersion(res)
+	return LoadStringResponse(res, "version")
 }
 
 func (b3 *BigBlueButton) checksum(action, params string) string {
