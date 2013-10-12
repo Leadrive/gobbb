@@ -48,6 +48,35 @@ func (b3 *BigBlueButton) Create(id string, options OptionEncoder) (*Meeting, err
 	return LoadMeetingCreateResponse(res)
 }
 
+func (b3 *BigBlueButton) DefaultConfigXML() (*ConfigXML, error) {
+	u := b3.makeURL("getDefaultConfigXML", url.Values{})
+	res, err := http.Get(u.String())
+	if nil != err {
+		return nil, err
+	}
+	defer res.Body.Close()
+	return readConfigXML(res.Body)
+}
+
+func (b3 *BigBlueButton) SetConfigXML(meeting string, c *ConfigXML) (string, error) {
+	action := "setConfigXML"
+	params := url.Values{
+		"meetingID": {meeting},
+		"configXML": {c.String()},
+	}
+	params.Add("checksum", b3.checksum(action, params.Encode()))
+	u, err := b3.Url.Parse(action + ".xml")
+	if nil != err {
+		return "", err
+	}
+	res, err := http.PostForm(u.String(), params)
+	if nil != err {
+		return "", err
+	}
+	defer res.Body.Close()
+	return LoadStringResponse(res, "configToken"), nil
+}
+
 func (b3 *BigBlueButton) JoinURL(name, meetingID, password string, options OptionEncoder) string {
 	return b3.makeURL("join", mergeUrlValues(
 		url.Values{
