@@ -45,7 +45,7 @@ func (b3 *BigBlueButton) Create(id string, options OptionEncoder) (*Meeting, err
 		return nil, err
 	}
 	defer res.Body.Close()
-	return LoadMeetingCreateResponse(res)
+	return loadMeetingCreateResponse(res)
 }
 
 func (b3 *BigBlueButton) DefaultConfigXML() (*ConfigXML, error) {
@@ -74,7 +74,7 @@ func (b3 *BigBlueButton) SetConfigXML(meeting string, c *ConfigXML) (string, err
 		return "", err
 	}
 	defer res.Body.Close()
-	return LoadStringResponse(res, "configToken"), nil
+	return loadStringResponse(res, "configToken"), nil
 }
 
 func (b3 *BigBlueButton) JoinURL(name, meetingID, password string, options OptionEncoder) string {
@@ -94,7 +94,7 @@ func (b3 *BigBlueButton) IsMeetingRunning(id string) bool {
 		return false
 	}
 	defer res.Body.Close()
-	return LoadBoolResponse(res, "running")
+	return loadBoolResponse(res, "running")
 }
 
 func (b3 *BigBlueButton) End(id, password string) bool {
@@ -117,7 +117,7 @@ func (b3 *BigBlueButton) MeetingInfo(id, password string) (*Meeting, error) {
 		return nil, err
 	}
 	defer res.Body.Close()
-	return LoadMeetingInfoResponse(res)
+	return loadMeetingInfoResponse(res)
 }
 
 func (b3 *BigBlueButton) Meetings() []*Meeting {
@@ -127,7 +127,7 @@ func (b3 *BigBlueButton) Meetings() []*Meeting {
 		return []*Meeting{}
 	}
 	defer res.Body.Close()
-	return LoadMeetigsResponse(res)
+	return loadMeetigsResponse(res)
 }
 
 func (b3 *BigBlueButton) Recordings(meetings []string) []*Recording {
@@ -141,7 +141,7 @@ func (b3 *BigBlueButton) Recordings(meetings []string) []*Recording {
 		return []*Recording{}
 	}
 	defer res.Body.Close()
-	return LoadRecordingsResponse(res)
+	return loadRecordingsResponse(res)
 }
 
 func (b3 *BigBlueButton) PublishRecordings(recordings []string, publish bool) bool {
@@ -155,7 +155,7 @@ func (b3 *BigBlueButton) PublishRecordings(recordings []string, publish bool) bo
 			return false
 		}
 		defer res.Body.Close()
-		return LoadBoolResponse(res, "published")
+		return loadBoolResponse(res, "published")
 	}
 	return false
 }
@@ -170,7 +170,7 @@ func (b3 *BigBlueButton) DeleteRecordings(recordings []string) bool {
 			return false
 		}
 		defer res.Body.Close()
-		return LoadBoolResponse(res, "deleted")
+		return loadBoolResponse(res, "deleted")
 	}
 	return false
 }
@@ -181,7 +181,7 @@ func (b3 *BigBlueButton) ServerVersion() string {
 		return "Error: " + err.Error()
 	}
 	defer res.Body.Close()
-	return LoadStringResponse(res, "version")
+	return loadStringResponse(res, "version")
 }
 
 func (b3 *BigBlueButton) checksum(action, params string) string {

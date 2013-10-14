@@ -7,7 +7,7 @@ import (
 	"github.com/sdgoij/go-pkg-xmlx"
 )
 
-func LoadResponseXML(r *http.Response) (response *xmlx.Node, err error) {
+func loadResponseXML(r *http.Response) (response *xmlx.Node, err error) {
 	var doc *xmlx.Document = xmlx.New()
 	if err = doc.LoadStream(r.Body, nil); nil != err {
 		return
@@ -19,16 +19,16 @@ func LoadResponseXML(r *http.Response) (response *xmlx.Node, err error) {
 	return
 }
 
-func LoadMeetingCreateResponse(r *http.Response) (*Meeting, error) {
-	if response, err := LoadResponseXML(r); nil == err {
+func loadMeetingCreateResponse(r *http.Response) (*Meeting, error) {
+	if response, err := loadResponseXML(r); nil == err {
 		return xml2meeting(response), nil
 	} else {
 		return nil, err
 	}
 }
 
-func LoadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
-	if response, err := LoadResponseXML(r); nil == err {
+func loadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
+	if response, err := loadResponseXML(r); nil == err {
 		nodes := response.SelectNodes("", "attendee")
 		attendees := make([]Attendee, len(nodes))
 		for k, v := range nodes {
@@ -60,8 +60,8 @@ func LoadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
 	}
 }
 
-func LoadMeetigsResponse(r *http.Response) []*Meeting {
-	if response, err := LoadResponseXML(r); nil == err {
+func loadMeetigsResponse(r *http.Response) []*Meeting {
+	if response, err := loadResponseXML(r); nil == err {
 		if nodes := response.SelectNodes("", "meeting"); len(nodes) > 0 {
 			meetings := make([]*Meeting, len(nodes))
 			for index, meeting := range nodes {
@@ -73,8 +73,8 @@ func LoadMeetigsResponse(r *http.Response) []*Meeting {
 	return []*Meeting{}
 }
 
-func LoadRecordingsResponse(r *http.Response) []*Recording {
-	if response, err := LoadResponseXML(r); nil == err {
+func loadRecordingsResponse(r *http.Response) []*Recording {
+	if response, err := loadResponseXML(r); nil == err {
 		if nodes := response.SelectNodes("", "recording"); len(nodes) > 0 {
 			recordings := make([]*Recording, len(nodes))
 			for index, recording := range nodes {
@@ -102,15 +102,15 @@ func LoadRecordingsResponse(r *http.Response) []*Recording {
 	return []*Recording{}
 }
 
-func LoadBoolResponse(r *http.Response, element string) bool {
-	if response, err := LoadResponseXML(r); nil == err {
+func loadBoolResponse(r *http.Response, element string) bool {
+	if response, err := loadResponseXML(r); nil == err {
 		return response.B("", element)
 	}
 	return false
 }
 
-func LoadStringResponse(r *http.Response, element string) string {
-	if response, err := LoadResponseXML(r); nil == err {
+func loadStringResponse(r *http.Response, element string) string {
+	if response, err := loadResponseXML(r); nil == err {
 		return response.S("", element)
 	} else {
 		return err.Error()
