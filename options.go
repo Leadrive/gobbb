@@ -11,18 +11,19 @@ import (
 var EmptyOptions = &emptyOptions{}
 
 type CreateOptions struct {
-	Name            string         `json:"name"`
-	AttendeePW      string         `json:"attendeePW"`
-	ModeratorPW     string         `json:"moderatorPW"`
-	Welcome         string         `json:"welcome"`
-	DialNumber      string         `json:"dialNumber"`
-	VoiceBridge     string         `json:"voiceBridge"`
-	WebVoice        string         `json:"webVoice"`
-	LogoutURL       string         `json:"logoutURL"`
-	MaxParticipants uint           `json:"maxParticipants"`
-	Record          bool           `json:"record"`
-	Duration        time.Duration  `json:"duration"`
-	Documents       []Presentation `json:documents`
+	Name            string        `json:"name"`
+	AttendeePW      string        `json:"attendeePW"`
+	ModeratorPW     string        `json:"moderatorPW"`
+	Welcome         string        `json:"welcome"`
+	DialNumber      string        `json:"dialNumber"`
+	VoiceBridge     string        `json:"voiceBridge"`
+	WebVoice        string        `json:"webVoice"`
+	LogoutURL       string        `json:"logoutURL"`
+	MaxParticipants uint          `json:"maxParticipants"`
+	Record          bool          `json:"record"`
+	Duration        time.Duration `json:"duration"`
+
+	Documents []ConfigXML_Document `json:documents`
 }
 
 type JoinOptions struct {
@@ -31,12 +32,6 @@ type JoinOptions struct {
 	WebVoiceConf string    `json:"webVoiceConf"`
 	ConfigToken  string    `json:"configToken"`
 	AvatarURL    string    `json:"avatarURL"`
-}
-
-type Presentation struct {
-	Name  string `json:"name,omitempty" xml:"name,attr,omitempty"`
-	Url   string `json:"url,omitempty"  xml:"url,attr,omitempty"`
-	Value []byte `json:"name,omitempty" xml:",chardata"`
 }
 
 type OptionEncoder interface {

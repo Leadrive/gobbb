@@ -48,6 +48,12 @@ type ConfigXML_BwMon struct {
 	Application string `json:"application,omitempty" xml:"application,attr,omitempty"`
 }
 
+type ConfigXML_Document struct {
+	Name  string `json:"name,omitempty" xml:"name,attr,omitempty"`
+	Url   string `json:"url,omitempty"  xml:"url,attr,omitempty"`
+	Value []byte `json:"name,omitempty" xml:",chardata"`
+}
+
 type ConfigXML_Help struct {
 	Url string `json:"url,omitempty" xml:"url,attr,omitempty"`
 }
@@ -131,6 +137,8 @@ type ConfigXML_Module struct {
 	// Example Chat Module,Breakout Module
 	Host   string `json:"host,omitempty" xml:"host,attr,omitempty"`
 	Secret string `json:"salt,omitempty" xml:"salt,attr,omitempty"`
+
+	Documents []ConfigXML_Document `json:"documents,omitempty" xml:"document,omitempty"`
 }
 
 type ConfigXML_PortTest struct {

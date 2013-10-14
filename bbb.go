@@ -33,7 +33,7 @@ func (b3 *BigBlueButton) Create(id string, options OptionEncoder) (*Meeting, err
 		err error
 	)
 	if options, ok := options.(*CreateOptions); ok && len(options.Documents) > 0 {
-		if mods, oops := buildModXML_Presentation(options.Documents); nil == oops {
+		if mods, oops := buildCreateMeetingXML(options.Documents); nil == oops {
 			res, err = http.Post(u.String(), "text/xml", bytes.NewReader(mods))
 		} else {
 			err = oops

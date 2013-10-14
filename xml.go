@@ -1,7 +1,6 @@
 package bbb
 
 import (
-	"encoding/xml"
 	"net/http"
 	"time"
 
@@ -132,18 +131,16 @@ func xml2meeting(meeting *xmlx.Node) *Meeting {
 	return &Meeting{}
 }
 
-type ModXML_Module struct {
-	Name string         `xml:"name,attr"`
-	Docs []Presentation `xml:"document"`
-}
-
-type ModXML_Root struct {
-	XMLName xml.Name        `xml:"modules"`
-	Modules []ModXML_Module `xml:"module"`
-}
-
-func buildModXML_Presentation(docs []Presentation) ([]byte, error) {
-	return xml.Marshal(ModXML_Root{xml.Name{}, []ModXML_Module{{"presentation", docs}}})
+func buildCreateMeetingXML(docs []ConfigXML_Document) ([]byte, error) {
+	doc, config := xmlx.New(), &ConfigXML{
+		Modules: []ConfigXML_Module{
+			{Name: "presentation", Documents: docs},
+		},
+	}
+	if err := doc.LoadString(config.String(), nil); nil != err {
+		return []byte(nil), err
+	}
+	return []byte(doc.SelectNode("", "modules").String()), nil
 }
 
 func mstime(ts int64) time.Time {
