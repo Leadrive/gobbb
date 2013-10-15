@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"html/template"
+	"io"
+	"io/ioutil"
 	"log"
+	"log/syslog"
 	"net/http"
 	"net/url"
+	"os"
 
 	"github.com/sdgoij/gobbb"
 )
@@ -14,6 +18,7 @@ var (
 	flagHttpAddr     = flag.String("http.addr", ":8080", "HTTP service address (e.g., ':8080')")
 	flagServerURL    = flag.String("server.url", "", "BigBlueButton API URL to connect")
 	flagServerSecret = flag.String("server.secret", "", "BigBlueButton API secret")
+	flagLogOutput    = flag.String("log.output", "", "Logfile, 'syslog' or 'nil'")
 
 	templates *template.Template
 	b3        bbb.BigBlueButton
@@ -43,6 +48,9 @@ func init() {
 }
 
 func main() {
+	if *flagLogOutput != "" {
+		logging(*flagLogOutput)
+	}
 	b3, _ = bbb.New(*flagServerURL, *flagServerSecret)
 	log.Fatal(http.ListenAndServe(*flagHttpAddr, Log(http.DefaultServeMux)))
 }
@@ -52,6 +60,32 @@ func Log(handler http.Handler) http.Handler {
 		log.Printf("%s %s %s", r.RemoteAddr, r.Method, r.URL)
 		handler.ServeHTTP(w, r)
 	})
+}
+
+func logging(output string) {
+	var (
+		writer io.Writer
+		err    error
+	)
+	switch output {
+	case "nil", "-":
+		writer, err = ioutil.Discard, nil
+	case "syslog":
+		writer, err = syslog.New(syslog.LOG_NOTICE, "bbbdemo")
+		log.SetFlags(log.Lshortfile)
+	default:
+		flags := os.O_APPEND | os.O_WRONLY
+		if _, err := os.Stat(output); nil != err {
+			flags |= os.O_CREATE
+		}
+		writer, err = os.OpenFile(output, flags, 0644)
+	}
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println("Setting log output to:", output)
+	log.SetOutput(writer)
+	log.Println("Started")
 }
 
 func PgIndex(w http.ResponseWriter, req *http.Request) {
@@ -71,7 +105,6 @@ func PgIndex(w http.ResponseWriter, req *http.Request) {
 }
 
 func PgConnect(w http.ResponseWriter, req *http.Request) {
-	log.Println("Connect", req.Method)
 	if "POST" == req.Method {
 		apiurl, secret := *flagServerURL, *flagServerSecret
 		if v := req.PostFormValue("apiurl"); v != "" {
