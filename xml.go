@@ -62,7 +62,7 @@ func loadMeetingInfoResponse(r *http.Response) (*Meeting, error) {
 
 func loadMeetigsResponse(r *http.Response) []*Meeting {
 	if response, err := loadResponseXML(r); nil == err {
-		if nodes := response.SelectNodes("", "meeting"); len(nodes) > 0 {
+		if nodes := response.SelectNode("", "meetings").SelectNodes("", "meeting"); len(nodes) > 0 {
 			meetings := make([]*Meeting, len(nodes))
 			for index, meeting := range nodes {
 				meetings[index] = xml2meeting(meeting)
@@ -75,7 +75,7 @@ func loadMeetigsResponse(r *http.Response) []*Meeting {
 
 func loadRecordingsResponse(r *http.Response) []*Recording {
 	if response, err := loadResponseXML(r); nil == err {
-		if nodes := response.SelectNodes("", "recording"); len(nodes) > 0 {
+		if nodes := response.SelectNode("", "recordings").SelectNodes("", "recording"); len(nodes) > 0 {
 			recordings := make([]*Recording, len(nodes))
 			for index, recording := range nodes {
 				playback := recording.SelectNode("", "playback")

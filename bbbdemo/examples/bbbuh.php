@@ -71,11 +71,12 @@ namespace bbb {
 		}
 
 		public function getDefaultConfigXML() {
-			return $this->emit("config.default")->data;
+			return $this->failOn("config.error", $this->emit("config.default"))->data;
 		}
 
 		public function setConfigXML($meeting, \stdclass $config) {
-			return $this->emit("config.set", compact("meeting", "config"))->data->token;
+			return $this->failOn("config.error", $this->emit("config.set",
+				compact("meeting", "config")))->data->token;
 		}
 
 		private function emit($event, array $data = array()) {

@@ -178,7 +178,7 @@ func (b3 *BigBlueButton) DeleteRecordings(recordings []string) bool {
 func (b3 *BigBlueButton) ServerVersion() string {
 	res, err := http.Get(b3.Url.String())
 	if nil != err {
-		return "Error: " + err.Error()
+		return ""
 	}
 	defer res.Body.Close()
 	return loadStringResponse(res, "version")

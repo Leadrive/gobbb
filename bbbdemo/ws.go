@@ -31,8 +31,9 @@ func HandleConnect(c *Client, event WsEvent) error {
 			ev.Data["version"] = version
 			c.b3 = b3
 		}
+	} else {
+		ev.Data["error"] = err.Error()
 	}
-	ev.Data["error"] = err.Error()
 	c.events <- ev
 	return err
 }
@@ -454,7 +455,7 @@ func itos(v interface{}) (s []string) {
 	panic("Too bad")
 }
 
-func jsoncp(dst interface{}, src interface{}) error {
+func jsoncp(dst, src interface{}) error {
 	if b, err := json.Marshal(src); nil == err {
 		if err := json.Unmarshal(b, dst); nil != err {
 			return err
